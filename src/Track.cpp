@@ -21,7 +21,7 @@ void Track::PushNoteEvent(unsigned long time, int key, int velocity) {
 	Note* note = new Note(time, key, velocity);
 	m_openNotes.push_back(note);
 	m_events.push_back(note);
-	std::cout << "Pushed note: " << note->GetNote_char() << note->GetNote_octave() << "\n";
+	//std::cout << "Pushed note: " << note->GetNote_char() << note->GetNote_octave() << " note code: " << note->GetNote() <<  "\n";
 }
 void Track::CloseNoteEvent(unsigned long time, int key, int velocity) {
 	Note* toClose = nullptr;

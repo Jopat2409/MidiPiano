@@ -102,7 +102,7 @@ bool Midi::AssertString(const int& stringCode) {
 }
 
 void Midi::LoadTrackEvent() {
-	unsigned long deltaTime = LoadLEB128();
+	unsigned long deltaTime = LoadLEB128() + m_cumDeltaTime;
 	uint8_t eventType = LoadType<uint8_t>();
 	switch (eventType) {
 	case 0xff:
@@ -115,6 +115,7 @@ void Midi::LoadTrackEvent() {
 		LoadMidiEvent(eventType, deltaTime);
 		break;
 	}
+	m_cumDeltaTime = deltaTime;
 }
 
 /* ---------- META EVENT HANDLING ---------------*/
@@ -167,6 +168,8 @@ void Midi::LoadMetaEvent(unsigned long dT) {
 
 void Midi::LoadTempoEvent(unsigned long deltaTime) {
 	int32_t bufferBytes = LoadType<int32_t>();
+	int tempo = bufferBytes & 0x00FFFFFF;
+	std::cout << "Tempo: " << tempo << "\n";
 }
 
 void Midi::SetDevicePort(unsigned long deltaTime) {
@@ -208,24 +211,27 @@ void Midi::LoadKeySignature(unsigned long deltaTime) {
 
 /* ---------- MIDI EVENT HANDLING ------------ */
 void Midi::LoadMidiEvent(uint8_t eventType, unsigned long dT) {
-	uint8_t note, vel;
+	// int buffers
+	uint8_t dat1, dat2;
 	switch (STATUS_FROM_MESSAGE(eventType)) {
 	case MIDI_NOTE_OFF:
-		LoadType<uint8_t>(note);
-		LoadType<uint8_t>(vel);
-		m_currentTrack->CloseNoteEvent(dT, note, vel);
+		LoadType<uint8_t>(dat1);
+		LoadType<uint8_t>(dat2);
+		m_currentTrack->CloseNoteEvent(dT, dat1, dat2);
 		break;
 	case MIDI_NOTE_ON:
-		LoadType<uint8_t>(note);
-		LoadType<uint8_t>(vel);
-		m_currentTrack->PushNoteEvent(dT, note, vel);
+		LoadType<uint8_t>(dat1);
+		LoadType<uint8_t>(dat2);
+		m_currentTrack->PushNoteEvent(dT, dat1, dat2);
 		break;
 	case MIDI_KEY_PRESSURE:
 		//TODO replace
 		LoadType<int16_t>();
 		break;
 	case MIDI_CONTROLLER:
-		m_currentTrack->PushControllerEvent(dT, LoadType<int8_t>(), LoadType<int8_t>());
+		LoadType<uint8_t>(dat1);
+		LoadType<uint8_t>(dat2);
+		m_currentTrack->PushControllerEvent(dT, dat1, dat2);
 		break;
 	case MIDI_PROGRAM_CHANGE:
 		//TODO replace
@@ -240,7 +246,8 @@ void Midi::LoadMidiEvent(uint8_t eventType, unsigned long dT) {
 		LoadType<int16_t>();
 		break;
 	default:
-		std::cout << "No midi event: " << eventType << "\n";
+		size_t i = GetReadBytes();
+		std::cout << "No midi event: " << eventType << " at memory location " << i << "\n";
 		break;
 	}
 }

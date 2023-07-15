@@ -1,7 +1,7 @@
 #include "..\include\io\BinaryFile.h"
 #include "..\include\base\Logging.h"
 
-const char* BinaryFile::m_lastError = "[INFO] No error!";
+const char* BinaryFile::m_lastError = nullptr;
 
 BinaryFile::BinaryFile(endianness_t type) {
 	c_endianness = type;
@@ -72,8 +72,9 @@ void BinaryFile::CheckSize(size_t size) {
 	// if there are less bytes left than bytes in object
 	if (bytesLeft < size)
 	{
-		// copy the last x bits to the start of the file
-		memcpy_s(this->inputStream, bytesLeft, &this->inputStream[this->cPtr], bytesLeft);
+		// copy the last x bits to the start of the file ONLY IF there are some bytes left
+		if(bytesLeft < 0)
+			memcpy_s(this->inputStream, bytesLeft, &this->inputStream[this->cPtr], bytesLeft);
 		// set cPtr to 0 and load bytes from the byte offset
 		this->cPtr = 0;
 		this->LoadBytes(bytesLeft);
