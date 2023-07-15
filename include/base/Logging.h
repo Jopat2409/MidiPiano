@@ -2,6 +2,7 @@
 #define _INTERNAL_LOGGING_H
 
 #pragma warning(disable: 26812)
+#pragma warning(disable: 4244)
 
 #include <iostream>
 

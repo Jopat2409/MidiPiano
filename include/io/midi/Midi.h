@@ -67,6 +67,8 @@ private:
 
 	int currentTime{ 0 };
 
+	unsigned long m_cumDeltaTime{ 0 };
+
 };
 
 #define MIDI_ASSERT(x, msg) if (!x) Midi::SetLastError(msg);

@@ -27,11 +27,13 @@ public:
 protected:
 	template <typename T>
 	inline void LoadType(T& dest) {
+		CheckSize(sizeof(T));
 		dest = ReverseEndianness(*(T*)(this->inputStream + this->cPtr));
 		this->cPtr += sizeof(T);
 	}
 	template <typename T>
 	inline T LoadType() {
+		CheckSize(sizeof(T));
 		this->cPtr += sizeof(T);
 		return ReverseEndianness(*(T*)(this->inputStream + this->cPtr - sizeof(T)));
 	}
@@ -67,6 +69,8 @@ private:
 			return _byteswap_ulong(val);
 		case 8:
 			return _byteswap_uint64(val);
+		default:
+			return val;
 		}
 	}
 
